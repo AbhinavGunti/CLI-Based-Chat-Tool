@@ -1,9 +1,11 @@
+from base64 import encode
+from tarfile import ENCODING
 import threading
 import socket
 
 host="127.0.0.1"
 port=55555
-
+ENCODE="ascii"
 server=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 server.bind((host,port))
 server.listen()
@@ -25,23 +27,25 @@ def handle(client): #handling 1 client
             clients.remove(client)
             client.close()
             nickname = nicknames[index]
-            broadcast(f"{nickname} left the chat!".encode("ascii"))
+            broadcast(f"{nickname} left the chat!".encode(ENCODING))
             nicknames.remove(nickname)
             break
 def receive():
     while True:
-        client, address=server.accept()
+        client, address=server.accept()                         #loop waits here till server accepts connection request from client
         print(f"Connected with {str(address)}")
-        client.send('NICK'.encode('ascii'))
-        nickname = client.recv(1024).decode('ascii')
+        client.send('NICK'.encode(ENCODING))
+        nickname = client.recv(1024).decode(ENCODING)
+
         nicknames.append(nickname)
         clients.append(client)
 
         print(f"Nickname of the client is {nickname}!")
-        broadcast(f'{nickname} joined the chat'.encode('ascii'))
-        client.send('Connected to the server!'.encode('ascii'))
+        broadcast(f'{nickname} joined the chat'.encode(ENCODING))
+        client.send('Connected to the server!'.encode(ENCODING))
 
-        thread = threading.Thread(target=handle,args=(client,))
+        thread = threading.Thread(target=handle,args=(client,))     #one thread created for each client
         thread.start()
 print("Server is listening....")
-receive()
+server_thread=threading.Thread(target=receive)
+server_thread.start()

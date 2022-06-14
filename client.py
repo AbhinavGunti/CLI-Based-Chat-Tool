@@ -1,17 +1,19 @@
+from tarfile import ENCODING
 import threading
 import socket
 
 nickname=input("Enter nickname : ")
 
+ENCODING="ascii"
 client= socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 client.connect(('127.0.0.1', 55555))
 
 def receive():
     while True:
         try:
-            message=client.recv(1024).decode('ascii')
+            message=client.recv(1024).decode(ENCODING)
             if message == 'NICK':
-                client.send(nickname.encode('ascii'))
+                client.send(nickname.encode(ENCODING))
             else:
                 print(message)
         except:
@@ -21,7 +23,7 @@ def receive():
 def write():
     while True:
         message= f'{nickname}:{input("")}'
-        client.send(message.encode('ascii'))
+        client.send(message.encode(ENCODING))
         
 receive_thread=threading.Thread(target=receive)
 receive_thread.start()
